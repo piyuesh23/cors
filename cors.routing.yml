@@ -1,0 +1,6 @@
+cors.config:
+  path: '/admin/config/services/cors'
+  defaults:
+    _form: '\Drupal\cors\Form\CorsConfigForm'
+  requirements:
+    _access: 'TRUE'

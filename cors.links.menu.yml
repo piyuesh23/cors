@@ -1,0 +1,6 @@
+cors.config:
+  title: 'CORS'
+  description: 'Enable Cross-origin resource sharing'
+  weight: 10
+  route_name: cors.config
+  parent: system.admin_config_services

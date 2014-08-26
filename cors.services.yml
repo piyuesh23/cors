@@ -1,0 +1,5 @@
+services:
+  cors.allow_access_origin:
+    class: Drupal\cors\EventSubscriber\CorsSubscriber
+    tags:
+      - {name: event_subscriber}
