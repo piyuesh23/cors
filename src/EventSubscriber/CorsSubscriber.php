@@ -3,14 +3,15 @@
 namespace Drupal\cors\EventSubscriber;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Drupal\Component\Utility\Unicode;
 
 class CorsSubscriber implements EventSubscriberInterface {
-  public function addAccessAllowOriginHeaders(GetResponseEvent $event) {
+  public function addAccessAllowOriginHeaders(FilterResponseEvent $event) {
     $domains = \Drupal::config('cors.config')->get('cors_domains');
     $request = $event->getRequest();
+    $response= $event->getResponse();
     $query_path = $request->getRequestUri();
     $current_path = Unicode::strtolower(\Drupal::service('path.alias_storage')->lookupPathAlias($query_path, 'en'));
     $request_headers = $request->headers->all();
@@ -62,7 +63,7 @@ class CorsSubscriber implements EventSubscriberInterface {
         foreach ($allowed as $header => $values) {
           if (!empty($values)) {
             foreach ($values as $value) {
-              $request->headers->set($header, $value);
+              $response->headers->set($header, $value);
             }
           }
         }
@@ -73,7 +74,7 @@ class CorsSubscriber implements EventSubscriberInterface {
   * {@inheritdoc}
   */
   static function getSubscribedEvents() {
-    $events[KernelEvents::REQUEST][] = array('addAccessAllowOriginHeaders');
+    $events[KernelEvents::RESPONSE][] = array('addAccessAllowOriginHeaders');
     return $events;
   }
 }
