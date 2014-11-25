@@ -3,4 +3,4 @@ cors.config:
   defaults:
     _form: '\Drupal\cors\Form\CorsConfigForm'
   requirements:
-    _access: 'TRUE'
+    _permission: 'administer site configuration'

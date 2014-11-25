@@ -8,12 +8,14 @@
 namespace Drupal\cors\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
-use Drupal\node\Entity\NodeType;
+use Drupal\Core\Form\FormStateInterface;
+
 class CorsConfigForm extends ConfigFormBase {
   public function getFormId() {
     return 'cors_config_form';
   }
-  public function buildForm(array $form, array &$form_state) {
+
+  public function buildForm(array $form, FormStateInterface $form_state) {
     $cors_domains = '';
     $config_cors = $this->configFactory->get('cors.config')->get('cors_domains');
     $form = array();
@@ -44,16 +46,11 @@ class CorsConfigForm extends ConfigFormBase {
       '#rows' => 10,
     );
 
-    $form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Save configuration'),
-    );
-
-    return $form;
+    return parent::buildForm($form, $form_state);
   }
 
-  public function submitForm(array &$form, array &$form_state) {
-    $domains = explode("\n", $form_state['values']['cors_domains'], 2);
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $domains = explode("\n", $form_state->getValue('cors_domains', ''), 2);
     $settings = array();
     foreach ($domains as $domain) {
       $domain = explode("|", $domain, 2);
