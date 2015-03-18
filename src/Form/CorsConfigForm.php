@@ -65,4 +65,13 @@ class CorsConfigForm extends ConfigFormBase {
     $config->save();
     drupal_set_message(t('Configuration saved successfully!'), 'status', FALSE);
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEditableConfigNames() {
+    return [
+      'cors.config'
+    ];
+  }
 }
