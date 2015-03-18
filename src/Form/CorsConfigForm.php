@@ -60,7 +60,7 @@ class CorsConfigForm extends ConfigFormBase {
       }
     }
 
-    $config = $this->configFactory->get('cors.config');
+    $config = $this->configFactory->getEditable('cors.config');
     $config->set('cors_domains', $settings);
     $config->save();
     drupal_set_message(t('Configuration saved successfully!'), 'status', FALSE);
