@@ -49,20 +49,36 @@ class CorsConfigForm extends ConfigFormBase {
     return parent::buildForm($form, $form_state);
   }
 
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $domains = explode("\n", $form_state->getValue('cors_domains', ''), 2);
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    $cors_domains = $form_state->getValue('cors_domains', '');
+
+    $domains = explode("\n", $cors_domains, 2);
     $settings = array();
     foreach ($domains as $domain) {
       $domain = explode("|", $domain, 2);
-      if (count($domain) === 2) {
+
+      if (!empty($domain[0]) || !empty($domain[1])) {
         $settings[$domain[0]] = (isset($settings[$domain[0]])) ? $settings[$domain[0]] . ' ' : '';
         $settings[$domain[0]] .= trim($domain[1]);
       }
+      else {
+        $form_state->setErrorByName('cors_domains', t('Malformed entry.'));
+      }
     }
 
+    if ($cors_domains) {
+      $form_state->setErrorByName('cors_domains', t('No domains provided.'));
+    }
+    elseif ($settings) {
+      $form_state->setValue('settings', $settings);
+    }
+  }
+
+  public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = \Drupal::configFactory()->getEditable('cors.config');
-    $config->set('cors_domains', $settings);
+    $config->set('cors_domains', $form_state->getValue('settings'));
     $config->save();
+
     drupal_set_message(t('Configuration saved successfully!'), 'status', FALSE);
   }
 
