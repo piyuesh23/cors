@@ -10,6 +10,10 @@ use Drupal\Component\Utility\Unicode;
 class CorsSubscriber implements EventSubscriberInterface {
   public function addAccessAllowOriginHeaders(FilterResponseEvent $event) {
     $domains = \Drupal::config('cors.config')->get('cors_domains');
+    if (empty($domains)) {
+      return;
+    }
+
     $request = $event->getRequest();
     $response= $event->getResponse();
     $query_path = $request->getRequestUri();

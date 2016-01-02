@@ -18,12 +18,13 @@ class CorsConfigForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $cors_domains = '';
     $config_cors = $this->configFactory->get('cors.config')->get('cors_domains');
-    $form = array();
-
-    foreach ($config_cors as $path => $domain) {
-      $cors_domains .= $path . '|' . $domain . "\n";
+    if (!empty($config_cors)) {
+      foreach ($config_cors as $path => $domain) {
+        $cors_domains .= $path . '|' . $domain . "\n";
+      }
     }
 
+    $form = array();
     $form['cors_domains'] = array(
       '#type' => 'textarea',
       '#title' => t('Domains'),
@@ -49,20 +50,48 @@ class CorsConfigForm extends ConfigFormBase {
     return parent::buildForm($form, $form_state);
   }
 
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $domains = explode("\n", $form_state->getValue('cors_domains', ''), 2);
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    $cors_domains = $form_state->getValue('cors_domains', '');
+    if (empty($cors_domains) && ($cors_domains != $form['cors_domains']['#default_value'])) {
+      $form_state->setErrorByName('cors_domains', t('No domains provided.'));
+      return;
+    }
+
+    $domains = explode("\r\n", $cors_domains);
     $settings = array();
+    $errors = null;
+
     foreach ($domains as $domain) {
+      if (empty($domain)) {
+        continue;
+      }
+
       $domain = explode("|", $domain, 2);
-      if (count($domain) === 2) {
+
+      if (empty($domain[0]) || empty($domain[1])) {
+        $form_state->setErrorByName('cors_domains', t('Contains malformed entry.'));
+        $errors = true;
+      }
+      else {
         $settings[$domain[0]] = (isset($settings[$domain[0]])) ? $settings[$domain[0]] . ' ' : '';
         $settings[$domain[0]] .= trim($domain[1]);
       }
     }
 
-    $config = $this->configFactory->get('cors.config');
-    $config->set('cors_domains', $settings);
+    if ($settings && !$errors) {
+      $form_state->setValue('settings', $settings);
+    }
+  }
+
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $config = \Drupal::configFactory()->getEditable('cors.config');
+    $config->set('cors_domains', $form_state->getValue('settings'));
     $config->save();
+
     drupal_set_message(t('Configuration saved successfully!'), 'status', FALSE);
+  }
+
+  protected function getEditableConfigNames() {
+    return ['cors.config'];
   }
 }
