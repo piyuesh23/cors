@@ -51,7 +51,7 @@ class CorsConfigForm extends ConfigFormBase {
 
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $cors_domains = $form_state->getValue('cors_domains', '');
-    if (empty($cors_domains)) {
+    if (empty($cors_domains) && ($cors_domains != $form['cors_domains']['#default_value'])) {
       $form_state->setErrorByName('cors_domains', t('No domains provided.'));
       return;
     }
