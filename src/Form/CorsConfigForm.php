@@ -18,12 +18,13 @@ class CorsConfigForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $cors_domains = '';
     $config_cors = $this->configFactory->get('cors.config')->get('cors_domains');
-    $form = array();
-
-    foreach ($config_cors as $path => $domain) {
-      $cors_domains .= $path . '|' . $domain . "\n";
+    if (!empty($config_cors)) {
+      foreach ($config_cors as $path => $domain) {
+        $cors_domains .= $path . '|' . $domain . "\n";
+      }
     }
 
+    $form = array();
     $form['cors_domains'] = array(
       '#type' => 'textarea',
       '#title' => t('Domains'),
