@@ -51,25 +51,33 @@ class CorsConfigForm extends ConfigFormBase {
 
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $cors_domains = $form_state->getValue('cors_domains', '');
+    if (empty($cors_domains)) {
+      $form_state->setErrorByName('cors_domains', t('No domains provided.'));
+      return;
+    }
 
-    $domains = explode("\n", $cors_domains, 2);
+    $domains = explode("\r\n", $cors_domains);
     $settings = array();
+    $errors = null;
+
     foreach ($domains as $domain) {
+      if (empty($domain)) {
+        continue;
+      }
+
       $domain = explode("|", $domain, 2);
 
-      if (!empty($domain[0]) || !empty($domain[1])) {
+      if (empty($domain[0]) || empty($domain[1])) {
+        $form_state->setErrorByName('cors_domains', t('Contains malformed entry.'));
+        $errors = true;
+      }
+      else {
         $settings[$domain[0]] = (isset($settings[$domain[0]])) ? $settings[$domain[0]] . ' ' : '';
         $settings[$domain[0]] .= trim($domain[1]);
       }
-      else {
-        $form_state->setErrorByName('cors_domains', t('Malformed entry.'));
-      }
     }
 
-    if ($cors_domains) {
-      $form_state->setErrorByName('cors_domains', t('No domains provided.'));
-    }
-    elseif ($settings) {
+    if ($settings && !$errors) {
       $form_state->setValue('settings', $settings);
     }
   }
